@@ -240,17 +240,13 @@ sub _format_bytes {
   my $suffix = $suffixes[0];
   my $x = $bytes;
   my $magnitude = 0;
-  if($bytes >= $block)
-  {
-
+  if($bytes >= $block) {
   #  return "$sign$bytes" if $bytes<$block;
-    do
-    {
+    do {
       $x /= $block;
       $magnitude++;
     } while ( human_round($x, $options{PRECISION}) >= $block );
-    if($magnitude >= (0 + @suffixes))
-    {
+    if($magnitude >= (0 + @suffixes)) {
       carp "number too large (>= $block**$magnitude)" unless ($options{QUIET});
     }
     $suffix = $suffixes[$magnitude];
@@ -259,12 +255,10 @@ sub _format_bytes {
 
   $x = _precision_cutoff($x, $options);
   #reasses encase the precision_cutoff caused the value to cross the block size
-  if($x >= $block)
-  {
+  if($x >= $block) {
     $x /= $block;
     $magnitude++;
-    if($magnitude >= (0 + @suffixes))
-    {
+    if($magnitude >= (0 + @suffixes)) {
       carp "number too large (>= $block**$magnitude)" unless ($options{QUIET});
     }
     $suffix = $suffixes[$magnitude];
@@ -274,16 +268,15 @@ sub _format_bytes {
 
 }
 sub _precision_cutoff {
-    my $bytes   = shift;
-    my $options = shift;
-    my %options = %$options;
-    if ( $options{PRECISION_CUTOFF} != -1 and ( length( sprintf( "%d", $bytes ) ) > $options{PRECISION_CUTOFF} ) ) {
-        $bytes = sprintf( "%d", human_round( $bytes, 0 ) );
-    }
-    else {
-        $bytes = sprintf( "%." . $options{PRECISION} . "f", human_round( $bytes, $options{PRECISION} ) );
-    }
-    return $bytes;
+ my $bytes   = shift;
+ my $options = shift;
+ my %options = %$options;
+ if ( $options{PRECISION_CUTOFF} != -1 and ( length( sprintf( "%d", $bytes ) ) > $options{PRECISION_CUTOFF} ) ) {
+   $bytes = sprintf( "%d", human_round( $bytes, 0 ) );
+ } else {
+   $bytes = sprintf( "%." . $options{PRECISION} . "f", human_round( $bytes, $options{PRECISION} ) );
+ }
+ return $bytes;
 }
 
 
