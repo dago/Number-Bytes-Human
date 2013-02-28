@@ -5,6 +5,7 @@ Number::Bytes::Human 0.07
 * write parse_bytes
 * include memoizing
 * write a benchmark: unmemoized vs. memoized vs. object
+* add test cases for rounding
 
 What I update when releasing 
 * Human.pm $VERSION
