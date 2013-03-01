@@ -112,6 +112,7 @@ sub _parse_args {
     $options{PRECISION} = 1;
     $options{PRECISION_CUTOFF} = 1;
     #$options{SUFFIXES} = # deferred to the last minute when we know BLOCK, seek [**]
+    $options{UNIT} = undef;
   }
   # else { %options = %$seed } # this is set if @_!=0, down below
 
@@ -182,12 +183,8 @@ sub _parse_args {
     } else {
       croak "suffixes ($args{suffixes}) should be 1024, 1000, si_1024, si_1000, 1024000 or an array ref";
     }
-  } elsif ($args{si}) {
-    my $set = ($options{BLOCK}==1024) ? 'si_1024' : 'si_1000';
-    $options{SUFFIXES} = _default_suffixes($set);
-  } elsif (defined $args{unit}) {
-    my $suff = $args{unit};
-    $options{SUFFIXES} = [ map  { "$_$suff" } @DEFAULT_PREFIXES ];
+  }
+  if (defined $args{unit}) {
     $options{UNIT} = $args{unit};
   }
 
@@ -236,7 +233,7 @@ sub _format_bytes {
   my $block = $options{BLOCK};
 
   # if a suffix set was not specified, pick a default [**]
-  my @suffixes = $options{SUFFIXES} ? @{$options{SUFFIXES}} : _default_suffixes($block);
+  my @suffixes = $options{SUFFIXES} ? @{$options{SUFFIXES}} : _default_suffixes( ($options{SI} ? 'si_' : '') . $block);
 
   # WHAT ABOUT NEGATIVE NUMBERS: -1K ?
   my $sign = '';
@@ -272,7 +269,10 @@ sub _format_bytes {
     $suffix = $suffixes[$magnitude];
     $x = _precision_cutoff($x, $options);
   }
-  return $sign . $x . $suffix;
+
+  my $unit = $options{UNIT} || '';
+
+  return $sign . $x . $suffix . $unit;
 
 }
 
@@ -300,14 +300,14 @@ sub _parse_bytes {
   my %suffix_block;
   my $m;
 
-#  if( $options{SUFFIXES} ) {
-#    $m = 1;
-#    foreach my $s (@{$options{SUFFIXES}}) {
-#      $suffix_mult{$s} = $m;
-#      $suffix_block{$s} = $options{BLOCK};
-#      $m *= $suffix_block{$s};
-#    }
-#  } else {
+  if( $options{SUFFIXES} ) {
+    $m = 1;
+    foreach my $s (@{$options{SUFFIXES}}) {
+      $suffix_mult{$s} = $m;
+      $suffix_block{$s} = $options{BLOCK};
+      $m *= $suffix_block{$s};
+    }
+  } else {
     if( !defined $options{SI} || $options{SI} == 1 ) {
       # If SI compatibility has been set BLOCK is ignored as it is infered from the unit
       $m = 1;
@@ -334,7 +334,7 @@ sub _parse_bytes {
         $m *= $suffix_block{$s};
       }
     }
-#  }
+  }
 
   my ($sign, $int, $frac, $unit) = ($human =~ /^\s*(-?)\s*(\d*)(?:\.(\d*))?\s*(\D*)$/);
 
